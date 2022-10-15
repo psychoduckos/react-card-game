@@ -2,13 +2,10 @@ import React, {useEffect, useState} from "react";
 
 import SentenceCard from "./components/Sentence/SentenseCard";
 import TableCardItem from "./components/TableCard/TableCardItem";
-import UserItem from "./components/Users/UserItem";
-import CardItems from "./components/Cards/CardItem";
+import UserTable from "./components/Users/UserTable";
+import CardItems from "./components/MyCards/MyCardItem";
 import db from "./db/db";
-import CardTable from "./components/Cards/CardTable";
-
-
-
+import MyCardTable from "./components/MyCards/MyCardTable";
 
 function App() {
     //constant
@@ -28,7 +25,7 @@ function App() {
 
     const [cardOnTable, setCardOnTable] = useState([])
 
-    const [userLeader, setUserLeader] = useState("")
+    const [leader, setUserLeader] = useState({})
 
     const [rounds, setRounds] = useState(0)
 
@@ -52,9 +49,16 @@ function App() {
         )
     }
 
+    const chooseWinner = () => {
+        if(leader.isUser !== true) {
+
+        } else {
+
+        }
+    }
+
     // Functions
     // random int
-
     const getRandomInt = (max) => {
         return Math.floor(Math.random() * max);
     }
@@ -73,7 +77,7 @@ function App() {
         });
         setPlayers(data);
     }
-    // get my random cards
+    // get my  cards
     const getMyCards = () => players.filter(element =>  element.isUser === true ? element.card : null)[0];
 
     // get bots card to table
@@ -83,14 +87,12 @@ function App() {
             if(element.isUser === undefined) {
                 return data.push(element.card[getRandomInt(element.card.length)])
             }
+            return null
         })
         setCardOnTable(data)
         return data
     }
 
-    const chooseBestPlayer = () => {
-        if()
-            }
     // choose my card
     const chooseMyCard = () => {
         const choosenCard = "";
@@ -111,19 +113,13 @@ function App() {
         setUser(data)
     }, [players])
 
-    /// useEffect to get randomCard from bots to table
-    useEffect(() => {
-        let data = getBotsCard()
-        setBotsCard(...data)
-    }, botsCard)
-
 
     return (
         <div className="App">
             <SentenceCard content={getRandomSentence().content}/>
-            <TableCardItem/>
-            <UserItem/>
-            {user && (<CardTable userInfo={user}/>)}
+            <TableCardItem />
+            {players && (<UserTable players={players}/>)}
+            {user && (<MyCardTable userInfo={user}/>)}
         </div>
     );
 }

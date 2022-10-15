@@ -1,9 +1,11 @@
 import React from "react";
+import "./SentenseCard.css"
 
 function SentenceCard(props) {
     return (
-        <div>
-            <h1>{props.content}</h1>
+
+        <div className="Sentense">
+            <h3>{props.content}</h3>
         </div>
      );
 }

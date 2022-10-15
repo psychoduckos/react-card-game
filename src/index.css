@@ -1,0 +1,11 @@
+* {
+    margin: 0;
+    padding: 0;
+    background-color: rgb(222, 190, 252);
+    box-sizing: border-box;
+}
+
+h3 {
+    background-color: rgb(186, 118, 250);
+
+}

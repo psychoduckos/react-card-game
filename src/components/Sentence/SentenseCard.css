@@ -1,0 +1,10 @@
+.Sentense {
+    background-color: rgb(186, 118, 250);
+    position: relative;
+    text-align: center;
+    font-size: medium;
+    margin: 30px 150px;
+    padding: 25px 10px;
+    border: 2px solid black;
+
+}
