@@ -80,7 +80,7 @@ function App() {
     // get my  cards
     const getMyCards = () => players.filter(element =>  element.isUser === true ? element.card : null)[0];
 
-    // get bots card to table
+    // Bots logic
     const getBotsCard = () => {
         let data = []
         players.map((element) => {
@@ -102,10 +102,13 @@ function App() {
     }
 
     //useEffects
-    // раздаёт карты пользователям
+    useEffect(() => {
+        setUserLeader(players[rounds])
+    }, [])
+    // раздаёт карты пользователям (при каждой смене лидера
     useEffect(() => {
         getCardForUser();
-    }, [])
+    }, [leader])
 
     // получает карты игрока
     useEffect(() => {
