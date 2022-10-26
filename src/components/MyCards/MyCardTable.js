@@ -9,7 +9,7 @@ const MyCardTable = (props) => {
             <div className="MyCardTableItems">
             {props.userInfo.card.map((element, index) => {
                 return (
-                    <MyCardItem content={element.content} key={index}/>
+                    <MyCardItem content={element.content} key={index} choseCard={props.choseCard}/>
                 )
             })}
             </div>

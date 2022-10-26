@@ -1,15 +1,14 @@
 import React, {useEffect, useState} from "react";
 
-import SentenceCard from "./components/Sentence/SentenseCard";
-import TableCardItem from "./components/TableCard/TableCardItem";
-import UserTable from "./components/Users/UserTable";
-import CardItems from "./components/MyCards/MyCardItem";
 import db from "./db/db";
+
+import SentenceCard from "./components/Sentence/SentenseCard";
+import UserTable from "./components/Users/UserTable";
 import MyCardTable from "./components/MyCards/MyCardTable";
+import TableCard from "./components/TableCard/TableCard";
 
 function App() {
     //constant
-    const cardCount = 4;
 
     //useStates
     const [players, setPlayers] = useState([
@@ -25,36 +24,35 @@ function App() {
 
     const [cardOnTable, setCardOnTable] = useState([])
 
-    const [leader, setUserLeader] = useState({})
+    const [leader, setUserLeader] = useState({user: {}, leaderCount: 0})
 
-    const [rounds, setRounds] = useState(0)
+    //gameIteration = players.length * rounds | rounds = players.length
+    const [rounds, setRounds] = useState({CurentRound: 0, maxRounds: 16})
 
+    const [sentence, setSentence] = useState(null)
     // game counter
     // установление лидера и + 1 к раунду - счетчик раундов и игровой процесс
     const newRoundStart = () => {
-        setUserLeader(players[rounds])
-        setRounds(rounds + 1 )
-        setLeader()
-        gameOver()
+        setUserLeader({user: players[leader.leaderCount], leaderCount: leader.leaderCount + 1})
+        if(leader.leaderCount >= players.length) setUserLeader({user: {}, leaderCount: 0})
+        setRounds({CurentRound: rounds.CurentRound + 1, maxRounds: rounds.maxRounds})
+        console.log(rounds);
+        getRandomSentence()
+        getCardForUser()
+        if (rounds.CurentRound === rounds.maxRounds) {
+            console.log(rounds);
+            let winner = totalWinner()
+            console.log(winner);
+            gameOver()
+            return false
+        }
     }
-
-    const setLeader = () => players[rounds].isLeader = true
 
     const gameOver = () => {
-        if(rounds > players.length ) return (
-            <div>
+        console.log("GameOver");
+            <div style={"position: absolute"}>
                 <h1>Game is over</h1>
             </div>
-
-        )
-    }
-
-    const chooseWinner = () => {
-        if(leader.isUser !== true) {
-
-        } else {
-
-        }
     }
 
     // Functions
@@ -63,7 +61,7 @@ function App() {
         return Math.floor(Math.random() * max);
     }
     // random sentence to table
-    const getRandomSentence = () => db.card[getRandomInt(db.card.length)]
+    const getRandomSentence = () => setSentence(db.card[getRandomInt(db.card.length)])
 
     // get random card
     const getRandomCard = () => db.word[getRandomInt(db.word.length)]
@@ -71,7 +69,7 @@ function App() {
     // get random users card
     const getCardForUser = () => {
         let data = players.map((element) => {
-            return {...element, card: [...new Array(cardCount).keys()].map(() => {
+            return {...element, card: [...new Array(players.length).keys()].map(() => {
                     return getRandomCard()
                 })}
         });
@@ -84,45 +82,77 @@ function App() {
     const getBotsCard = () => {
         let data = []
         players.map((element) => {
-            if(element.isUser === undefined) {
-                return data.push(element.card[getRandomInt(element.card.length)])
+            if(element.isUser === undefined && element.isLeader === false) {
+                let userCard = {
+                    userName: element.name,
+                    card: element.card[getRandomInt(element.card.length)]
+                }
+                return data.push(userCard)
             }
             return null
         })
-        setCardOnTable(data)
+        // удалять у ботов карточку
         return data
     }
 
     // choose my card
-    const chooseMyCard = () => {
-        const choosenCard = "";
-        setCardOnTable(...cardOnTable, choosenCard)
-        newRoundStart()
-
+    const choseMyCard = (event) => {
+        let chosenCard = event.target.parentNode;
+        let index = ([...chosenCard.children].indexOf(event.target))
+        let cardData = event.target.innerText
+        setCardOnTable([...cardOnTable, {userName: user.name, card: {content: cardData}}])
+        user.card.splice(index, 1)
     }
+
+
+    const cleanTable = () => {setCardOnTable([]); newRoundStart();}
+
+    const addScore = (name) => {
+
+        if(leader.user.isUser !== true) {
+            setTimeout(() => {
+                let winner = players[getRandomInt(players.length)]
+                winner.userScore = winner.userScore + 1;
+                let users = players.filter(element => element.name !== winner.name);
+                setPlayers([...users, winner]);
+                cleanTable();
+            }, 5000)
+        } else {
+            let winner = players.filter(element => element.name == name)[0];
+            console.log(winner);
+            winner.userScore = winner.userScore + 1;
+            let users = players.filter(element => element.name !== name);
+            setPlayers([...users, winner]);
+            cleanTable();
+        }
+    }
+
+    const totalWinner = () => players.reduce((previos, current ) => current?.userScore > previos.userScore?current : previos, {userScore:-Infinity});
 
     //useEffects
     useEffect(() => {
-        setUserLeader(players[rounds])
+        setUserLeader({user: {}, leaderCount: 0})
     }, [])
     // раздаёт карты пользователям (при каждой смене лидера
     useEffect(() => {
         getCardForUser();
-    }, [leader])
+        getRandomSentence()
 
-    // получает карты игрока
+    }, [])
+
     useEffect(() => {
         let data = players[0].card.length !== 0 ? getMyCards() : null
         setUser(data)
+        let botsCards = players[0].card.length !== 0 ? getBotsCard() : null
+        setTimeout(() => {setCardOnTable(botsCards)}, 3000)
     }, [players])
-
 
     return (
         <div className="App">
-            <SentenceCard content={getRandomSentence().content}/>
-            <TableCardItem />
+            {sentence && <SentenceCard content={sentence.content}/>}
+            {cardOnTable && <TableCard tableCard={cardOnTable} choseWinner={addScore}/>}
             {players && (<UserTable players={players}/>)}
-            {user && (<MyCardTable userInfo={user}/>)}
+            {user && (<MyCardTable userInfo={user} choseCard={choseMyCard} />)}
         </div>
     );
 }
